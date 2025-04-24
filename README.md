@@ -5,7 +5,7 @@ Google Cloud Activated Shell 기준
 ### Google Cloud Activated Shell Setup
 ```
 gcloud auth login
-gcloud config 
+gcloud config set project PROJECT_ID
 ```
 ### 환경 변수 설정
 ```
