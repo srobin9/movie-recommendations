@@ -1,6 +1,7 @@
 # movie-recommendations
 Google Cloud Activated Shell 기준
 
+## Initial Set up
 ### 환경 변수 설정
 ```
 export PROJECT_ID=$GOOGLE_CLOUD_PROJECT
@@ -22,6 +23,7 @@ gcloud services enable \
    storage.googleapis.com \
    --project $PROJECT_ID
 ```
+## AlloyDB Setup
 ### AlloyDB 생성
 ```
 if [ -z "$(gcloud alloydb instances list --project=$PROJECT_ID)" ]; then
@@ -56,7 +58,8 @@ else
 fi
 ```
 
-### AlloyDB에 데이터 설정하기 위한 GCE Instnace 생성
+### AlloyDB 데이터베이스와 테이블 구성
+#### AlloyDB에 데이터 설정하기 위한 GCE Instnace 생성
 ```
 gcloud compute instances create psql-admin \
     --project=$PROJECT_ID \
@@ -68,13 +71,12 @@ gcloud compute instances create psql-admin \
     --scopes="https://www.googleapis.com/auth/cloud-platform" \
     --machine-type=e2-medium
 ```
-
-### GCE Instance에 접속
+#### GCE Instance에 접속
 ```
 gcloud compute ssh psql-admin --project $PROJECT_ID --zone $GCP_REGION-b
 ```
 
-### AlloyDB 데이터베이스와 테이블 구성
+#### PostgreSQL Client 설치
 ```
 sudo apt-get install -y postgresql-client
 export PROJECT_ID=$(curl -H "Metadata-Flavor:Google" http://metadata.google.internal/computeMetadata/v1/project/project-id)
@@ -82,10 +84,14 @@ export PGPASSWORD=movies-demo-password
 export GCP_REGION=us-central1
 export ALLOYDB_ENDPOINT_NAME=movies-endpoint
 export ALLOYDB_INSTANCE_IP=$(gcloud alloydb instances describe movies-instance --cluster movies-cluster --region $GCP_REGION --project $PROJECT_ID --format="value(ipAddress)")
-
+```
+#### movies 데이터베이스 생성 및 PGvctor extension 활성화
+```
 psql -U postgres -h $ALLOYDB_INSTANCE_IP -c 'create DATABASE movies'
 psql -U postgres -h $ALLOYDB_INSTANCE_IP -d movies -c 'CREATE EXTENSION IF NOT EXISTS alloydb_scann CASCADE;'
-
+```
+#### Embeddins 저장용 테이블 생성 
+```
 cat <<EOF | psql -U postgres -h $ALLOYDB_INSTANCE_IP -d movies
   CREATE TABLE IF NOT EXISTS
 movie_titles(
@@ -103,11 +109,14 @@ movie_titles(
     langchain_metadata JSON not NULL
     );
 EOF
-
+```
+#### Prepopulated embeddings dataset을 테이블에 복사
+```
 gsutil cp gs://cloud-samples-data/langchain/alloydb/netflix_titles_embeddings.csv .
-
 psql -U postgres -h $ALLOYDB_INSTANCE_IP -d movies -c '\COPY movie_titles FROM ./netflix_titles_embeddings.csv CSV HEADER'
-
+```
+#### GCE Instance 접속 종료
+```
 exit
 ```
 
