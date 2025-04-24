@@ -27,7 +27,7 @@ gcloud services enable \
    run.googleapis.com \
    servicenetworking.googleapis.com \
    storage.googleapis.com \
-   --project $PROJECT_ID
+   --project=$PROJECT_ID
 ```
 ## AlloyDB Setup
 ### AlloyDB 생성
