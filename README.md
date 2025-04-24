@@ -48,14 +48,14 @@ if [ -z "$(gcloud alloydb instances list --project=$PROJECT_ID)" ]; then
       --project=$PROJECT_ID
 
   gcloud alloydb clusters create movies-cluster \
-      --region $GCP_REGION \
+      --region $REGION \
       --password "movies-demo-password" \
       --project $PROJECT_ID
 
   gcloud alloydb instances create movies-instance \
     --instance-type=PRIMARY \
     --cpu-count=4 \
-    --region=$GCP_REGION \
+    --region=$REGION \
     --cluster=movies-cluster \
     --project $PROJECT_ID
 
