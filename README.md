@@ -2,6 +2,11 @@
 Google Cloud Activated Shell 기준
 
 ## Initial Set up
+### Google Cloud Activated Shell Setup
+```
+gcloud auth login
+gcloud config 
+```
 ### 환경 변수 설정
 ```
 export PROJECT_ID=$GOOGLE_CLOUD_PROJECT
