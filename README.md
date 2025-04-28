@@ -150,17 +150,22 @@ gcloud builds submit --tag=${REGION}-docker.pkg.dev/${PROJECT_ID}/docker-repo/mo
 
 ## CloudRun Setup
 
-### CloudRun에서 사용할 Service Account 생성 및 Vertex AI 호출 권한 부여
+### CloudRun에서 사용할 Service Account 생성 및 권한 부여
 ```
 # Vertex AI 호출을 위한 SA 생성
 gcloud iam service-accounts create $GCP_SERVICE_ACCOUNT \
   --description "our famous recommendation service" \
   --project $PROJECT_ID
 
-# Vertex AI 호출을 위한 Rule 부여
+# Vertex AI 호출을 위한 Role 부여
 gcloud projects add-iam-policy-binding $PROJECT_ID  \
   --member "serviceAccount:$GCP_SERVICE_ACCOUNT@$PROJECT_ID.iam.gserviceaccount.com"  \
   --role "roles/aiplatform.user"
+
+# DB 연결을 위한 Role 부여
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:${GCP_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/alloydb.client"
 ```
 
 ### Cloud run에 배포
