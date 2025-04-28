@@ -35,17 +35,17 @@ gcloud services enable \
 if [ -z "$(gcloud alloydb instances list --project=$PROJECT_ID)" ]; then
   gcloud compute addresses create psa-range \
       --global \
-      --purpose=VPC_PEERING \
-      --prefix-length=16 \
-      --description="ip range for service networking" \
-      --network=default \
-      --project=$PROJECT_ID
+      --purpose = VPC_PEERING \
+      --prefix-length = 16 \
+      --description = "ip range for service networking" \
+      --network = default \
+      --project = $PROJECT_ID
 
   gcloud services vpc-peerings connect \
-      --service=servicenetworking.googleapis.com \
-      --ranges=psa-range \
-      --network=default \
-      --project=$PROJECT_ID
+      --service = servicenetworking.googleapis.com \
+      --ranges  = psa-range \
+      --network = default \
+      --project = $PROJECT_ID
 
   gcloud alloydb clusters create movies-cluster \
       --region $REGION \
@@ -53,11 +53,11 @@ if [ -z "$(gcloud alloydb instances list --project=$PROJECT_ID)" ]; then
       --project $PROJECT_ID
 
   gcloud alloydb instances create movies-instance \
-    --instance-type=PRIMARY \
-    --cpu-count=4 \
-    --region=$REGION \
-    --cluster=movies-cluster \
-    --project $PROJECT_ID
+      --instance-type = PRIMARY \
+      --cpu-count = 4 \
+      --region  = $REGION \
+      --cluster = movies-cluster \
+      --project $PROJECT_ID
 
 else
   echo "AlloyDB has already been created for you"
