@@ -1,0 +1,16 @@
+# Git 관련 파일 제외
+.git/
+.gitignore
+
+# Python 가상환경 제외
+.venv/
+venv/
+env/
+
+# Python 캐시 파일 제외
+__pycache__/
+*.pyc
+
+# 기타 제외할 파일/폴더
+local_secrets.yaml
+*.log

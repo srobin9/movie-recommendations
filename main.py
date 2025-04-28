@@ -1,10 +1,14 @@
+# main.py 상단에 추가
+from google.cloud import storage
+import logging # 로깅 추가
+
 # -*- coding: utf-8 -*-
 # 필요한 라이브러리들을 가져옵니다.
 import os  # 운영 체제와 상호 작용하기 위한 모듈 (환경 변수 접근 등)
 # 웹 애플리케이션 구축을 위한 Flask 프레임워크 관련 모듈
 from flask import Flask, request, jsonify, render_template
 # Vertex AI Safety Setting 사용
-from vertexai.generative_models._generative_models import SafetySetting
+from vertexai.generative_models import HarmCategory, HarmBlockThreshold
 # LangChain에서 Vertex AI의 임베딩 및 LLM 모델을 사용하기 위한 모듈
 from langchain_google_vertexai import VertexAIEmbeddings, VertexAI
 # LangChain에서 AlloyDB for PostgreSQL 벡터 저장소 및 엔진을 사용하기 위한 모듈             
@@ -36,37 +40,34 @@ iptype                  = "PRIVATE"                 # AlloyDB 접속 시 사용�
 
 # --- 언어 모델 (LLM) 안전 설정 정의 ---
 # Vertex AI 모델의 안전 설정을 정의합니다. 특정 카테고리의 유해 콘텐츠 생성을 차단하는 임계값을 설정합니다.
-# 여기서는 모든 유해 콘텐츠 카테고리(혐오 발언, 위험한 콘텐츠, 성적인 내용, 괴롭힘)에 대해
-# 가장 낮은 차단 임계값(OFF: 거의 차단 안 함)을 설정하고 있습니다.
-safety_settings = [
-  SafetySetting(
-    category    = SafetySetting.HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-    threshold   = SafetySetting.HarmBlockThreshold.BLOCK_NONE # OFF 대신 BLOCK_NONE 사용 권장 (명칭 변경 가능성 있음)
-  ),
-  SafetySetting(
-    category    = SafetySetting.HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-    threshold   = SafetySetting.HarmBlockThreshold.BLOCK_NONE
-  ),
-  SafetySetting(
-    category    = SafetySetting.HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-    threshold   = SafetySetting.HarmBlockThreshold.BLOCK_NONE
-  ),
-  SafetySetting(
-    category    = SafetySetting.HarmCategory.HARM_CATEGORY_HARASSMENT,
-    threshold   = SafetySetting.HarmBlockThreshold.BLOCK_NONE
-  ),
-]
+# 모든 유해 콘텐츠 카테고리(혐오 발언, 위험한 콘텐츠, 성적인 내용, 괴롭힘)에 대 임계값을 설정하고 있습니다.
+safety_settings_config = {
+    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+}
 
 # --- 언어 모델 (LLM) 초기화 ---
 # Vertex AI의 Gemini 모델을 설정합니다.
 llm = VertexAI(
-    model_name          = gemini_model, # 사용할 LLM 모델 이름 (예: gemini-1.5-flash, gemini-1.5-pro 등 확인 필요)
-    project             = project_id,   # LLM을 사용할 Google Cloud 프로젝트 ID
-    max_output_tokens   = 8192,         # LLM이 생성할 수 있는 최대 토큰 수 (답변 길이 제한)
-    safety_settings     = safety_settings # 위에서 정의한 안전 설정을 적용
-    # temperature         = 0.0         # 모델의 창의성 조절 (0.0은 가장 결정론적, 높을수록 다양/무작위적) - 필요시 주석 해제
+    model_name          = gemini_model,           # 사용할 LLM 모델 이름 (예: gemini-1.5-flash, gemini-1.5-pro 등 확인 필요)
+    project             = project_id,             # LLM을 사용할 Google Cloud 프로젝트 ID
+    max_output_tokens   = 8192,                   # LLM이 생성할 수 있는 최대 토큰 수 (답변 길이 제한)
+    safety_settings     = safety_settings_config  # 위에서 정의한 안전 설정을 적용
+    # temperature         = 0.0                   # 모델의 창의성 조절 (0.0은 가장 결정론적, 높을수록 다양/무작위적) - 필요시 주석 해제
 )
 
+# AlloyDB 초기화 코드 전에 테스트 코드 추가
+try:
+    storage_client = storage.Client(project=project_id)
+    buckets = storage_client.list_buckets()
+    logging.warning("Successfully listed GCS buckets (Service Account Auth OK):") # WARNING 레벨로 변경하여 로그 확인 용이하게
+    # for bucket in buckets: # 너무 많은 로그를 피하기 위해 주석 처리
+    #     logging.warning(bucket.name)
+except Exception as e:
+    logging.error(f"Failed to list GCS buckets: {e}", exc_info=True) # 오류 발생 시 상세 로그 출력
+    
 # --- AlloyDB 엔진 초기화 ---
 # AlloyDB for PostgreSQL 데이터베이스에 연결하기 위한 엔진 객체를 생성합니다.
 # google-cloud-alloydb-connector 라이브러리를 사용하여 안전하게 연결합니다.
