@@ -179,7 +179,7 @@ gcloud run deploy movie-recommendations \
 ## 테스트
 ```
 #CloudRun URL확인
-CLOUD_RUN_ENDPOINT=$(gcloud run services describe movie-recommendation-eu --region $GCP_REGION --format='value(status.url)' --project $PROJECT_ID)
+CLOUD_RUN_ENDPOINT=$(gcloud run services describe movie-recommendation-eu --region $REGION --format='value(status.url)' --project $PROJECT_ID)
 echo $CLOUD_RUN_ENDPOINT
 #테스트 수행
 curl -X POST -H "Content-Type: application/json" -d '{
