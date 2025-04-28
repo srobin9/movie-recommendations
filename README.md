@@ -166,7 +166,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID  \
 ### Cloud run에 배포
 ```
 gcloud run deploy movie-recommendations \
---image ${REGION}-docker.pkg.dev/${PROJECT_ID}/docker-repo/movie-recommendation  \
+--image ${REGION}-docker.pkg.dev/${PROJECT_ID}/docker-repo/movie-recommendations  \
 --region ${REGION}  \
 --set-env-vars PROJECT_ID=${PROJECT_ID},REGION=${REGION},GEMINI_MODEL=${GEMINI_MODEL},TEXT_EMBEDDING_MODEL=${TEXT_EMBEDDING_MODEL} \
 --allow-unauthenticated \
