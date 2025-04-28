@@ -71,7 +71,7 @@ gcloud compute instances create psql-admin \
     --project=$PROJECT_ID \
     --image-family=debian-12 \
     --image-project=debian-cloud \
-    --zone=$GCP_REGION-b \
+    --zone=$REGION-b \
     --network=default \
     --subnet=default \
     --scopes="https://www.googleapis.com/auth/cloud-platform" \
