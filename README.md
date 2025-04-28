@@ -196,7 +196,9 @@ curl -X POST -H "Content-Type: application/json" -d '{
 }' "$CLOUD_RUN_ENDPOINT/recommendations"
 ```
 ## Resources Clean-up
+아래 처럼 clean_up.sh 파일을 생성합니다. 
 ```
+# clean_up.sh
 # 사용자 확인 (선택 사항이지만 안전을 위해 권장)
 read -p "정말로 $PROJECT_ID 프로젝트의 리소스를 삭제하시겠습니까? (y/N) " -n 1 -r
 echo
@@ -283,4 +285,9 @@ rm -rf ~/movie-recommendations
 
 echo "리소스 정리가 완료되었습니다."
 echo "Google Cloud Console (https://console.cloud.google.com/) 에서 $PROJECT_ID 프로젝트를 확인하여 모든 리소스가 정상적으로 삭제되었는지 확인하는 것이 좋습니다."
+```
+위에서 생성한 shell script를 실행하여 생성한 Google Cloud 자원들을 삭제합니다. 
+```
+chmod 777 clean_up.sh
+sh ./clean.sh
 ```
