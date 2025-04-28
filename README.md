@@ -9,12 +9,12 @@ gcloud config set project <PROJECT_ID>
 ```
 ### 환경 변수 설정
 ```
-export PROJECT_ID=<PROJECT ID>
-export REGION=us-central1
-export GCP_SERVICE_ACCOUNT=movie-recommendations
+export PROJECT_ID            = <PROJECT ID>
+export REGION                = us-central1
+export GCP_SERVICE_ACCOUNT   = movie-recommendations
 
-export GEMINI_MODEL=gemini-1.5-flash-002
-export TEXT_EMBEDDING_MODEL=text-embedding-005
+export GEMINI_MODEL          = gemini-1.5-flash-002
+export TEXT_EMBEDDING_MODEL  = text-embedding-005
 ```
 
 ### 서비스 활성화
@@ -35,11 +35,11 @@ gcloud services enable \
 if [ -z "$(gcloud alloydb instances list --project=$PROJECT_ID)" ]; then
   gcloud compute addresses create psa-range \
       --global \
-      --purpose = VPC_PEERING \
+      --purpose       = VPC_PEERING \
       --prefix-length = 16 \
-      --description = "ip range for service networking" \
-      --network = default \
-      --project = $PROJECT_ID
+      --description   = "ip range for service networking" \
+      --network       = default \
+      --project       = $PROJECT_ID
 
   gcloud services vpc-peerings connect \
       --service = servicenetworking.googleapis.com \
@@ -53,10 +53,10 @@ if [ -z "$(gcloud alloydb instances list --project=$PROJECT_ID)" ]; then
       --project $PROJECT_ID
 
   gcloud alloydb instances create movies-instance \
-      --instance-type = PRIMARY \
-      --cpu-count = 4 \
-      --region  = $REGION \
-      --cluster = movies-cluster \
+      --instance-type   = PRIMARY \
+      --cpu-count       = 4 \
+      --region          = $REGION \
+      --cluster         = movies-cluster \
       --project $PROJECT_ID
 
 else
@@ -170,14 +170,18 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 ### Cloud run에 배포
 ```
+echo "Cloud Run 서비스 재배포 (Direct VPC Egress 사용)..."
 gcloud run deploy movie-recommendations \
---image ${REGION}-docker.pkg.dev/${PROJECT_ID}/docker-repo/movie-recommendations  \
---region ${REGION}  \
---set-env-vars PROJECT_ID=${PROJECT_ID},REGION=${REGION},GEMINI_MODEL=${GEMINI_MODEL},TEXT_EMBEDDING_MODEL=${TEXT_EMBEDDING_MODEL} \
---allow-unauthenticated \
---max-instances 3 \
---service-account ${GCP_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com  \
---project $PROJECT_ID
+  --image ${REGION}-docker.pkg.dev/${PROJECT_ID}/docker-repo/movie-recommendations \
+  --region ${REGION} \
+  --set-env-vars PROJECT_ID=${PROJECT_ID},REGION=${REGION},GEMINI_MODEL=${GEMINI_MODEL},TEXT_EMBEDDING_MODEL=${TEXT_EMBEDDING_MODEL} \
+  --allow-unauthenticated \
+  --max-instances 3 \
+  --service-account ${GCP_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
+  --network=default \
+  # --subnet=default # 특정 서브넷 지정이 필요하면 주석 해제 (일반적으로 네트워크만 지정해도 됨)
+  --vpc-egress=private-ranges-only \
+  --project $PROJECT_ID
 
 ```
 
