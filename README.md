@@ -5,11 +5,11 @@ Google Cloud Activated Shell 기준
 ### Google Cloud Activated Shell Setup
 ```
 gcloud auth login
-gcloud config set project PROJECT_ID
+gcloud config set project <PROJECT_ID>
 ```
 ### 환경 변수 설정
 ```
-export PROJECT_ID=$GOOGLE_CLOUD_PROJECT
+export PROJECT_ID=<PROJECT ID>
 export REGION=us-central1
 export GCP_SERVICE_ACCOUNT=movie-recommendations
 
