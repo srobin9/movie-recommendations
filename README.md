@@ -75,11 +75,12 @@ gcloud compute instances create psql-admin \
     --network=default \
     --subnet=default \
     --scopes="https://www.googleapis.com/auth/cloud-platform" \
-    --machine-type=e2-medium
+    --machine-type=e2-medium \
+    --shielded-secure-boot
 ```
 #### GCE Instance에 접속
 ```
-gcloud compute ssh psql-admin --project $PROJECT_ID --zone $GCP_REGION-b
+gcloud compute ssh psql-admin --project $PROJECT_ID --zone $REGION-b
 ```
 
 #### PostgreSQL Client 설치
