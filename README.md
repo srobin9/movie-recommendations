@@ -1,5 +1,5 @@
 # movie-recommendations
-Google Cloud Activated Shell 기준
+Google Cloud Activated Shell 기준으로 실행하고 테스트하는 법을 안내합니다. 
 
 ## Initial Set up
 ### Google Cloud Activated Shell Setup
@@ -176,7 +176,7 @@ gcloud run deploy movie-recommendations \
 
 ```
 
-### 테스트
+## 테스트
 ```
 #CloudRun URL확인
 CLOUD_RUN_ENDPOINT=$(gcloud run services describe movie-recommendation-eu --region $GCP_REGION --format='value(status.url)' --project $PROJECT_ID)
@@ -186,4 +186,93 @@ curl -X POST -H "Content-Type: application/json" -d '{
   "movies": ["Despicable Me 4", "Inside Out 2"],
   "scenario": "가족과 함께 보기 좋은"
 }' "$CLOUD_RUN_ENDPOINT/recommendations""
+```
+## Resources Clean-up
+```
+# 사용자 확인 (선택 사항이지만 안전을 위해 권장)
+read -p "정말로 $PROJECT_ID 프로젝트의 리소스를 삭제하시겠습니까? (y/N) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]
+then
+    echo "리소스 삭제를 취소했습니다."
+    exit 1
+fi
+
+# 1. Cloud Run 서비스 삭제
+echo "Cloud Run 서비스 삭제 중: movie-recommendations..."
+gcloud run services delete movie-recommendations \
+  --region=${REGION} \
+  --project=$PROJECT_ID \
+  --quiet
+
+# 2. Artifact Registry Docker 저장소 삭제 (내부 이미지 포함)
+echo "Artifact Registry 저장소 삭제 중: docker-repo..."
+gcloud artifacts repositories delete docker-repo \
+  --location=$REGION \
+  --project=$PROJECT_ID \
+  --quiet
+
+# 3. GCE 인스턴스 삭제 (psql-admin)
+echo "GCE 인스턴스 삭제 중: psql-admin..."
+gcloud compute instances delete psql-admin \
+  --zone=$REGION-b \
+  --project=$PROJECT_ID \
+  --quiet
+
+# 4. AlloyDB 인스턴스 삭제
+# 주의: 인스턴스 삭제는 시간이 다소 걸릴 수 있습니다.
+echo "AlloyDB 인스턴스 삭제 중: movies-instance..."
+gcloud alloydb instances delete movies-instance \
+  --cluster=movies-cluster \
+  --region=$REGION \
+  --project=$PROJECT_ID \
+  --quiet
+
+# 5. AlloyDB 클러스터 삭제
+# 주의: 클러스터 삭제는 시간이 다소 걸릴 수 있습니다.
+# 인스턴스가 완전히 삭제된 후 실행해야 할 수 있습니다. 잠시 기다린 후 실행하세요.
+echo "AlloyDB 클러스터 삭제 대기 중 (약 1분)..."
+sleep 60
+echo "AlloyDB 클러스터 삭제 중: movies-cluster..."
+gcloud alloydb clusters delete movies-cluster \
+  --region=$REGION \
+  --project=$PROJECT_ID \
+  --force \
+  --quiet
+
+# 6. 서비스 네트워킹용 예약된 IP 주소(PSA Range) 삭제
+# 주의: AlloyDB 클러스터가 완전히 삭제된 후 실행해야 할 수 있습니다.
+# 만약 'resource is being used' 오류가 발생하면 잠시 후 다시 시도하세요.
+echo "PSA IP 주소 범위 삭제 대기 중 (약 1분)..."
+sleep 60
+echo "Compute Address (PSA Range) 삭제 중: psa-range..."
+gcloud compute addresses delete psa-range \
+  --global \
+  --project=$PROJECT_ID \
+  --quiet
+
+# 7. VPC 피어링 연결 해제 (선택 사항 - PSA Range 삭제로 충분할 수 있음)
+# 일반적으로 PSA Range를 삭제하면 관련 피어링도 정리될 수 있으나, 명시적으로 해제할 수도 있습니다.
+# echo "VPC 피어링 연결 해제 중..."
+# gcloud services vpc-peerings delete \
+#     --service=servicenetworking.googleapis.com \
+#     --network=default \
+#     --project=$PROJECT_ID \
+#     --quiet
+# 참고: vpc-peerings delete 대신 update --remove-peering을 사용해야 할 수도 있습니다.
+# PSA Range 삭제 후 문제가 없다면 이 단계는 생략해도 무방합니다.
+
+# 8. 서비스 계정 삭제
+echo "IAM 서비스 계정 삭제 중: $GCP_SERVICE_ACCOUNT..."
+gcloud iam service-accounts delete ${GCP_SERVICE_ACCOUNT}@${PROJECT_ID}.iam.gserviceaccount.com \
+  --project=$PROJECT_ID \
+  --quiet
+# 참고: 서비스 계정에 연결된 IAM 정책 바인딩(roles/aiplatform.user)은 서비스 계정이 삭제되면 자동으로 처리됩니다.
+
+# 9. 로컬 실습 코드 디렉토리 삭제 (선택 사항)
+echo "로컬 코드 디렉토리 삭제 중: ~/movie-recommendations..."
+rm -rf ~/movie-recommendations
+
+echo "리소스 정리가 완료되었습니다."
+echo "Google Cloud Console (https://console.cloud.google.com/) 에서 $PROJECT_ID 프로젝트를 확인하여 모든 리소스가 정상적으로 삭제되었는지 확인하는 것이 좋습니다."
 ```
