@@ -10,10 +10,10 @@ gcloud config set project <PROJECT_ID>
 ### 환경 변수 설정
 ```
 export PROJECT_ID = <PROJECT ID>
-export REGION = us-central1
-export GCP_SERVICE_ACCOUNT = movie-recommendations
-export GEMINI_MODEL = gemini-1.5-flash-002
-export TEXT_EMBEDDING_MODEL = text-embedding-005
+export REGION=us-central1
+export GCP_SERVICE_ACCOUNT=movie-recommendations
+export GEMINI_MODEL=gemini-1.5-flash-002
+export TEXT_EMBEDDING_MODEL=text-embedding-005
 ```
 
 ### 서비스 활성화
