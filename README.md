@@ -185,7 +185,7 @@ echo $CLOUD_RUN_ENDPOINT
 curl -X POST -H "Content-Type: application/json" -d '{
   "movies": ["Despicable Me 4", "Inside Out 2"],
   "scenario": "가족과 함께 보기 좋은"
-}' "$CLOUD_RUN_ENDPOINT/recommendations""
+}' "$CLOUD_RUN_ENDPOINT/recommendations"
 ```
 ## Resources Clean-up
 ```
