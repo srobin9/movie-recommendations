@@ -16,7 +16,7 @@ export GEMINI_MODEL=gemini-2.0-flash
 export TEXT_EMBEDDING_MODEL=text-embedding-005
 ```
 * Gemini Model과 Text Embedding Model은 수시로 버전이 업데이트되니 실행 전에 문서를 확인해서 최신 버전을 사용하시기 바랍니다.
-* Gemini Model Version [https://ai.google.dev/gemini-api/docs/models?hl=ko]
+* [Gemini Model Version](https://ai.google.dev/gemini-api/docs/models?hl=ko)
 * [Text Embedding Model Version](https://cloud.google.com/vertex-ai/generative-ai/docs/model-reference/text-embeddings-api?hl=ko)
 
 ### 서비스 활성화
