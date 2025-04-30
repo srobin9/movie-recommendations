@@ -12,7 +12,7 @@ gcloud config set project <PROJECT_ID>
 export PROJECT_ID=<PROJECT ID>
 export REGION=us-central1
 export GCP_SERVICE_ACCOUNT=movie-recommendations
-export GEMINI_MODEL=gemini-1.5-flash-002
+export GEMINI_MODEL=gemini-2.0-flash
 export TEXT_EMBEDDING_MODEL=text-embedding-005
 ```
 
